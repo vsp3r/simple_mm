@@ -5,7 +5,7 @@ import logging
 import json
 import threading
 
-from .types import Exchange
+from .types import ExchangeType
 
 class DataFeed(threading.Thread):
     def __init__(self, url, coin, callback,

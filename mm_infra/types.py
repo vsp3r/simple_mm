@@ -1,6 +1,6 @@
 import enum
 
-class Exchange(enum.IntEnum):
+class ExchangeType(enum.IntEnum):
     HL = 0
     BINANCE = 1
 

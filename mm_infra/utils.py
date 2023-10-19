@@ -1,7 +1,8 @@
 import json
+import os
 
-def config_parse(config):
-    pass
 
-def auth_parse(auth):
-    pass
+def parse_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_path) as f:
+        return json.load(f)
