@@ -1,12 +1,11 @@
 {
     "Symbols":[
-        "GMT",
-        "ETH"
+        "BTC"
     ],
     
     "Exchange": {
-        "HL_URL":"b",
-        "Bin_URL":"x",
+        "HL_URL":"wss://api.hyperliquid.xyz/ws",
+        "Bin_URL":"wss://fstream.binance.com/ws",
         "MakerFee":0.0002,
         "TakerFee": 0.0025
     },
