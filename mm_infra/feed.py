@@ -25,7 +25,7 @@ class DataFeed:
     async def hyperliquid_feed(self):
         # url = "wss://api.hyperliquid.xyz/ws"
         uri = 'wss://api.hyperliquid-testnet.xyz/ws'  
-        print(f'starting hl for {self.coin} and url: {uri}')
+        print(f'starting HYPERLIQUID for {self.coin} and url: {uri}')
         async with websockets.connect(uri) as websocket:
             subscription_message = {
                 "method": "subscribe",
@@ -46,7 +46,7 @@ class DataFeed:
     
     async def binance_feed(self):
         uri = 'wss://fstream.binance.com/ws'  
-        print("started  binance feed")
+        print(f'starting BINANCE for {self.coin} and url: {uri}')
         async with websockets.connect(uri) as websocket:
             c = self.coin.lower() + 'usdt'
             level = 5
