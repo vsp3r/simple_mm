@@ -8,9 +8,13 @@ import os
 import cProfile
 import pstats
 import traceback
+import asyncio
 
 from mm_infra import config_parse
-from mm_infra.autotrader import AutoTrader
+from mm_infra import AutoTrader
+# from mm_infra.autotrader import AutoTrader
+# import alpha.simple_mm.autotrader
+
 
 CONFIG_FILE = 'config.json'
 AUTH_FILE = 'auth.json'
@@ -19,15 +23,19 @@ LOG_FILE = 'mm.log'
 
 
 def start_autotrader(coin, config):
-    autotrader = AutoTrader(coin, config)
-    autotrader.start()
+    at = AutoTrader(coin, config)
+    at.start()
+    # asyncio.run(at.run())
+
 
 
 def run(config):
     print(config)
     all_coins = config['Symbols']
+    # start_autotrader("BTC")
     with multiprocessing.Pool(len(all_coins)) as pool:
         # pool.map(start_autotrader, all_coins)
+
         pool.starmap(start_autotrader, [(coin, config) for coin in all_coins])
         # for coin in config['Symbols']:
         #     pool.apply_async(autotrader.main(coin, config), 
@@ -58,9 +66,9 @@ def main():
 
 
 if __name__ == '__main__':
-    pr = cProfile.Profile()
-    pr.enable()
-    # "main" code
+    # pr = cProfile.Profile()
+    # pr.enable()
+    # # "main" code
     
     
     
@@ -70,11 +78,11 @@ if __name__ == '__main__':
     
     
     
-    pr.disable()
-    pr.dump_stats("profile_results.stats")
+    # pr.disable()
+    # pr.dump_stats("profile_results.stats")
 
-    # Load and print the stats
-    stats = pstats.Stats("profile_results.stats")
+    # # Load and print the stats
+    # stats = pstats.Stats("profile_results.stats")
 
-    # Convert to milliseconds (ms)
-    stats.strip_dirs().sort_stats('cumulative').print_stats(0.001)
+    # # Convert to milliseconds (ms)
+    # stats.strip_dirs().sort_stats('cumulative').print_stats(0.001)

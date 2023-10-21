@@ -1,6 +1,7 @@
 {
     "Symbols":[
-        "BTC"
+        "BTC",
+        "GMT"
     ],
     
     "Exchange": {

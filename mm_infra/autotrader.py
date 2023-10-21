@@ -4,12 +4,17 @@ import asyncio
 import logging
 import multiprocessing
 import os
+import websockets
+import json
 
 # from mm_infra import DataFeed, Orderbook, config_parse, auth_parse, ExchangeType
 # from hyperliquid.exchange import Exchange
 # from hyperliquid.info import Info
+# from .mm_infra.feed import DataFeed
+# from .mm_infra.types import ExchangeType
+# import .feed
 from .feed import DataFeed
-from .types import ExchangeType
+# from .utils import config_parse, auth_parse
 
 
 
@@ -59,35 +64,30 @@ class AutoTrader:
     # self.logger.info("%s started with arguments={%s}", self.name, ", ".join(sys.argv))
     # if self.config is not None:
     #     self.logger.info("configuration=%s", json.dumps(self.config, separators=(',', ':')))
-    
-    def hl_handler(self, message, n):
-        print(f'HL ({n}): {message}')
-
-    def bin_handler(self, message, n):
-        print(f'Binance ({n}): {message}')
-
-
     async def run(self):
         print(f'Running Autotrader {self.coin}')
         await self.data_feed.run()
-        # loop = asyncio.get_event_loop()
-        # await asyncio.gather(self.binance_feed(), self.hyperliquid_feed())
-        # f = DataFeed(self.hl_url, self.coin, self.hl_handler, ExchangeType.HL)
-        # loop.run_until_complete(asyncio.gather(f.hyperliquid_feed()))
-        # await asyncio.gather()
+
+    def hl_handler(self, message, n):
+        print(f'HyperLiquid[{self.coin}] ({n}): {message}')
+
+    def bin_handler(self, message, n):
+        print(f'Binance[{self.coin}] ({n}): {message}')
 
     def start(self):
         asyncio.run(self.run())
     
 
-def main(coin: str, config):
-    # config = config_parse(CONFIG_FILE)
-    # auth = auth_parse(AUTH_FILE)
-    trader = AutoTrader(coin, config)
-    # asyncio.run(trader.run())
-    trader.run()
+# def main():
+#     config = config_parse(CONFIG_FILE)
+#     auth = auth_parse(AUTH_FILE)
 
-if __name__ == '__main__':
-    # if sys.platform == 'darwin':
-    #     multiprocessing.set_start_method("spawn")
-    main()
+#     coin = config['Symbols'][0]
+#     trader = AutoTrader(coin, config)
+#     # asyncio.run(trader.run())
+#     trader.start()
+
+# if __name__ == '__main__':
+#     # if sys.platform == 'darwin':
+#     #     multiprocessing.set_start_method("spawn")
+#     main()
