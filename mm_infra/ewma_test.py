@@ -99,9 +99,18 @@ class OrderBook:
         if ewma_bid is not None and ewma_ask is not None:
             print(f"Current Bid: {self.bids[-1]:.2f}, Current Ask: {self.asks[-1]:.2f}")
             print(f"EWMA Bid Difference: {ewma_bid:.2f}, EWMA Ask Difference: {ewma_ask:.2f}")
-            if self.fair_bid is not None and self.fair_ask is not None:
-                print(f"Fair Bid: {self.fair_bid:.2f}, Fair Ask: {self.fair_ask:.2f}")
+            
+            if self.fair_bid is not None:
+                print(f"Fair Bid: {self.fair_bid:.2f}", end=", ")
+            else:
+                print("Fair Bid: None", end=", ")
+
+            if self.fair_ask is not None:
+                print(f"Fair Ask: {self.fair_ask:.2f}")
+            else:
+                print("Fair Ask: None")
             print("-----")
+
 
 
 def main():
