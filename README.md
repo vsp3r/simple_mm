@@ -6,12 +6,13 @@ Bin -> HL
 
 ### Setting up
 
-- [ ] Config parser
-- [ ] Auth parser
+- [x] Config parser
+- [x] Auth parser
 
 ### Infra
 
-- [ ] Async connect to data feeds
+- [x] Async connect to data feeds
+  - [ ] Seems that HL is grouping orders into single messages, may need to use different system
 - [ ] Local orderbook (not just dict)
 
 ### Trading logic
@@ -21,9 +22,10 @@ Bin -> HL
 - [ ] sending updates to risk engine
 
 ### Risk Engine
-This should be the only thing printing in console when we are trading all 50 coins
-- [ ] What parameters to track?
 
+This should be the only thing printing in console when we are trading all 50 coins
+
+- [ ] What parameters to track?
 
 # Process flow (with Locks)
 

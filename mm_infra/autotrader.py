@@ -14,6 +14,7 @@ import json
 # from .mm_infra.types import ExchangeType
 # import .feed
 from .feed import DataFeed
+# from .orderbook import Orderbook
 # from .utils import config_parse, auth_parse
 
 
@@ -69,10 +70,13 @@ class AutoTrader:
         await self.data_feed.run()
 
     def hl_handler(self, message, n):
-        print(f'HyperLiquid[{self.coin}] ({n}): {message}')
+        # print(f'HyperLiquid[{self.coin}] ({n}): {message}')
+        bids = message['data']['levels'][0][x]['px'] for x in message['data']['levels'][0]
+        print(bids)
 
     def bin_handler(self, message, n):
-        print(f'Binance[{self.coin}] ({n}): {message}')
+        # print(f'Binance[{self.coin}] ({n}): {message}')
+        pass
 
     def start(self):
         asyncio.run(self.run())
