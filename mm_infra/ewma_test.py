@@ -125,10 +125,12 @@ def main():
         binance_data = {'bid': 1678.7 + np.random.normal(0, 1), 'ask': 1679.3 + np.random.normal(0, 1)}
         exchange_a_data = {'bid': 1679.0 + np.random.normal(0, 1), 'ask': 1680.0 + np.random.normal(0, 1)}
 
+        
         binance_order_book.update_order_book(binance_data)
         exchange_a_order_book.update_order_book(exchange_a_data)
 
-        # Calculate fair prices based on Binance's prices
+        # Calculate fair prices based on each other's prices
+        binance_order_book.calculate_fair_prices(exchange_a_data['bid'], exchange_a_data['ask'])
         exchange_a_order_book.calculate_fair_prices(binance_data['bid'], binance_data['ask'])
 
         # Display information
