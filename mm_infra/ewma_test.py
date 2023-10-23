@@ -131,7 +131,10 @@ def main():
 
         # Calculate fair prices based on each other's prices
         binance_order_book.calculate_fair_prices(exchange_a_data['bid'], exchange_a_data['ask'])
-        exchange_a_order_book.calculate_fair_prices(binance_data['bid'], binance_data['ask'])
+        ewma_bid, ewma_ask = exchange_a_order_book.calculate_ewma()
+        if ewma_bid is not None and ewma_ask is not None:
+            exchange_a_order_book.calculate_fair_prices(binance_data['bid'] - ewma_bid, binance_data['ask'] - ewma_ask)
+
 
         # Display information
         print("Binance Order Book:")
