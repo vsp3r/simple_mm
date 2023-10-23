@@ -1,3 +1,4 @@
 websockets
 eth-account
 hyperliquid-python-sdk
+numpy
