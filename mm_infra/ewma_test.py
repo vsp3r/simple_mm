@@ -102,27 +102,33 @@ class OrderBook:
             print(f"Fair Bid: {self.fair_bid:.2f}, Fair Ask: {self.fair_ask:.2f}")
             print("-----")
 
-# Usage
-ewma_window_size = 10
-binance_order_book = OrderBook(ewma_window_size=ewma_window_size)
-exchange_a_order_book = OrderBook(ewma_window_size=ewma_window_size)
+def main():
 
-# Simulated loop for real-time data (replace these with real data)
-for i in range(20):  # Simulating 20 updates
-    binance_data = {'bid': 1678.7 + np.random.normal(0, 1), 'ask': 1679.3 + np.random.normal(0, 1)}
-    exchange_a_data = {'bid': 1679.0 + np.random.normal(0, 1), 'ask': 1680.0 + np.random.normal(0, 1)}
+    # Usage
+    ewma_window_size = 10
+    binance_order_book = OrderBook(ewma_window_size=ewma_window_size)
+    exchange_a_order_book = OrderBook(ewma_window_size=ewma_window_size)
 
-    binance_order_book.update_order_book(binance_data)
-    exchange_a_order_book.update_order_book(exchange_a_data)
+    # Simulated loop for real-time data (replace these with real data)
+    for i in range(20):  # Simulating 20 updates
+        binance_data = {'bid': 1678.7 + np.random.normal(0, 1), 'ask': 1679.3 + np.random.normal(0, 1)}
+        exchange_a_data = {'bid': 1679.0 + np.random.normal(0, 1), 'ask': 1680.0 + np.random.normal(0, 1)}
 
-    # Calculate fair prices based on Binance's prices
-    exchange_a_order_book.calculate_fair_prices(binance_data['bid'], binance_data['ask'])
+        binance_order_book.update_order_book(binance_data)
+        exchange_a_order_book.update_order_book(exchange_a_data)
 
-    # Display information
-    print("Binance Order Book:")
-    binance_order_book.display_info()
-    
-    print("Exchange_A Order Book:")
-    exchange_a_order_book.display_info()
+        # Calculate fair prices based on Binance's prices
+        exchange_a_order_book.calculate_fair_prices(binance_data['bid'], binance_data['ask'])
 
-    time.sleep(1)  # Sleep for 1 second to simulate real-time data updates
+        # Display information
+        print("Binance Order Book:")
+        binance_order_book.display_info()
+        
+        print("Exchange_A Order Book:")
+        exchange_a_order_book.display_info()
+
+        time.sleep(1)  # Sleep for 1 second to simulate real-time data updates
+
+
+if __name__ == '__main__':
+    main()
