@@ -94,9 +94,10 @@ class OrderBook:
             self.fair_bid = external_bid - ewma_bid
             self.fair_ask = external_ask - ewma_ask
 
-    def display_info(self):
+    def display_info(self, i):
         ewma_bid, ewma_ask = self.calculate_ewma()
         if ewma_bid is not None and ewma_ask is not None:
+            print(f"({i})-----({i})")
             print(f"Current Bid: {self.bids[-1]:.2f}, Current Ask: {self.asks[-1]:.2f}")
             print(f"EWMA Bid Difference: {ewma_bid:.2f}, EWMA Ask Difference: {ewma_ask:.2f}")
             
@@ -137,12 +138,14 @@ def main():
 
 
 
+
+
         # Display information
         print("Binance Order Book:")
-        binance_order_book.display_info()
+        binance_order_book.display_info(i)
         
         print("Exchange_A Order Book:")
-        exchange_a_order_book.display_info()
+        exchange_a_order_book.display_info(i)
 
         time.sleep(1)  # Sleep for 1 second to simulate real-time data updates
 
