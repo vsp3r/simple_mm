@@ -92,7 +92,8 @@ class OrderBook:
         ewma_bid, ewma_ask = self.calculate_ewma()
         if ewma_bid is not None and ewma_ask is not None:
             self.fair_bid = external_bid - ewma_bid
-            self.fair_ask = external_ask - ewma_ask
+        self.fair_ask = external_ask - ewma_ask
+
 
     def display_info(self, i):
         ewma_bid, ewma_ask = self.calculate_ewma()

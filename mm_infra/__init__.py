@@ -10,5 +10,5 @@ __all__ = ["DataFeed", "Orderbook", "config_parse", "auth_parse", "ExchangeType"
 from .feed import DataFeed
 from .orderbook import Orderbook
 from .utils import config_parse, auth_parse
-from .types import ExchangeType
+# from .types import ExchangeType
 from .autotrader import AutoTrader

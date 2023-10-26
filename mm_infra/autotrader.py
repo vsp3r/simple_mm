@@ -14,7 +14,9 @@ import json
 # from .mm_infra.types import ExchangeType
 # import .feed
 from .feed import DataFeed
-# from .orderbook import Orderbook
+from .orderbook import Orderbook
+from .types import ExchangeType
+
 # from .utils import config_parse, auth_parse
 
 
@@ -36,6 +38,9 @@ class AutoTrader:
 
         # self.hl_url = config['Exchange']['HL_URL']
         self.data_feed = DataFeed(coin, (self.hl_handler, self.bin_handler))
+        self.price_decimals = self.decipher_decimals(coin)
+        self.binance_book = Orderbook(coin, ExchangeType.BINANCE
+                                      )
 
 
         # General config
@@ -65,14 +70,22 @@ class AutoTrader:
     # self.logger.info("%s started with arguments={%s}", self.name, ", ".join(sys.argv))
     # if self.config is not None:
     #     self.logger.info("configuration=%s", json.dumps(self.config, separators=(',', ':')))
+
+
     async def run(self):
         print(f'Running Autotrader {self.coin}')
         await self.data_feed.run()
 
+
+    def decypher_decimals(self, coin):
+        
+
+
+
     def hl_handler(self, message, n):
-        # print(f'HyperLiquid[{self.coin}] ({n}): {message}')
-        bids = message['data']['levels'][0][x]['px'] for x in message['data']['levels'][0]
-        print(bids)
+        print(f'HyperLiquid[{self.coin}] ({n}): {message}')
+        # bids = message['data']['levels'][0][x]['px'] for x in message['data']['levels'][0]
+        # print(message)
 
     def bin_handler(self, message, n):
         # print(f'Binance[{self.coin}] ({n}): {message}')
