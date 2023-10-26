@@ -2,3 +2,5 @@ websockets
 eth-account
 hyperliquid-python-sdk
 numpy
+boto3
+lz4
