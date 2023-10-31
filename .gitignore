@@ -1,2 +1,5 @@
 auth.json
 coinlist.txt
+.env
+mm_config.txt
+coin_config.txt

@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import websockets
 import json
+import time
 
 # from mm_infra import DataFeed, Orderbook, config_parse, auth_parse, ExchangeType
 # from hyperliquid.exchange import Exchange
@@ -26,24 +27,32 @@ AUTH_FILE = 'auth.json'
 
 class AutoTrader:
     # def __init__(self, coin, wallet, hl_url, logger):
-    def __init__(self, coin, config):
+    def __init__(self, coin, global_config, coin_config, update_event, feed):
+        self.coin = coin
+        self.global_config = global_config
+        self.coin_config = coin_config
+        self.update_event = update_event
 
+        if feed:
+            self.data_feed = DataFeed(coin, (self.hl_handler, self.bin_handler))
         # Hyperliquid connection
         # self.info = Info(hl_url, skip_ws=True)
         # self.exchange = Exchange(wallet, hl_url)
         # self.exchange.update_leverage(50, coin)
-        self.position = None
-        self.config = config
-        self.coin = coin
+        # self.position = None
+        # self.config = config
+        # self.coin = coin
 
         # self.hl_url = config['Exchange']['HL_URL']
-        self.data_feed = DataFeed(coin, (self.hl_handler, self.bin_handler))
-        self.price_decimals = self.decipher_decimals(coin)
-        self.binance_book = Orderbook(coin, ExchangeType.BINANCE
-                                      )
+        
+        # self.price_decimals = self.decipher_decimals(coin)
+        # self.binance_book = Orderbook(coin, ExchangeType.BINANCE
+                                    #   )
 
 
         # General config
+        self.glob_position = global_config['max_pos']
+        self.coin_pos = coin_config[coin]['coin_pos']
         
         self.last_mtime = None
 
@@ -74,16 +83,25 @@ class AutoTrader:
 
     async def run(self):
         print(f'Running Autotrader {self.coin}')
-        await self.data_feed.run()
+        # await self.data_feed.run()
+        n = 0
+        while True:
+            if self.update_event.is_set():
+                self.glob_position = self.global_config['max_pos']
+                self.coin_pos = self.coin_config[self.coin]['coin_pos']
+                self.update_event.clear()
+            self.hl_handler(self.coin, int(time.time() * 1000))
 
 
     def decypher_decimals(self, coin):
-        
+        pass
 
 
 
     def hl_handler(self, message, n):
-        print(f'HyperLiquid[{self.coin}] ({n}): {message}')
+        # pass
+        print(f'{message}({n}): Max pos {self.glob_position}, coin pos {self.coin_pos}')
+        # print(f'HyperLiquid[{self.coin}] ({n}): {message}')
         # bids = message['data']['levels'][0][x]['px'] for x in message['data']['levels'][0]
         # print(message)
 
@@ -92,6 +110,7 @@ class AutoTrader:
         pass
 
     def start(self):
+        print(f'started {self.coin}')
         asyncio.run(self.run())
     
 

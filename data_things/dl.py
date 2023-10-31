@@ -15,7 +15,7 @@ def download_and_process_file(i, coin, day, offset):
     s3 = boto3.client('s3', config=boto3.session.Config(signature_version=botocore.UNSIGNED))
     
     # i += offset
-    folder_path = f"data/{coin}"
+    folder_path = f"data_trades/{coin}"
     try:
         os.makedirs(folder_path)
     except FileExistsError:
@@ -25,7 +25,7 @@ def download_and_process_file(i, coin, day, offset):
 
     # Your bucket and file path
     bucket_name = 'hyperliquid-archive'
-    file_path = f'market_data/{day}/{i}/l2Book/{coin}.lz4'
+    file_path = f'market_data/{day}/{i}/trades/{coin}.lz4'
 
     s3.download_file(bucket_name, file_path, local_file_path)
     os.system(f'lz4 {local_file_path}')
@@ -35,7 +35,7 @@ def download_and_process_file(i, coin, day, offset):
 
 def main(coin, day):
     # print(f'main: {coin}, {day}')
-    hours = 24-7
+    hours = 24
     offset = 24-hours
     arguments = [(i, coin, day, offset) for i in range(hours)]
     print(arguments)

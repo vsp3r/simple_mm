@@ -1,0 +1,16 @@
+{
+    "ETH": {
+        "CUSTOM": "False",
+        "FADE": 0.1,
+        "SPREAD": 0.1,
+        "DEVIATION": 0.1,
+        "coin_pos": 123222
+    },
+    "BTC": {
+        "CUSTOM": "False",
+        "FADE": 0.1,
+        "SPREAD": 0.1,
+        "DEVIATION": 0.1,
+        "coin_pos": 99
+    }
+}
