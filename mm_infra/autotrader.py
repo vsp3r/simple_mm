@@ -96,6 +96,8 @@ class AutoTrader:
     def decypher_decimals(self, coin):
         pass
 
+    
+    # penis
 
 
     def hl_handler(self, message, n):

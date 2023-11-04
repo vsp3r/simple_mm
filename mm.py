@@ -73,8 +73,6 @@ def run(config):
     # start_autotrader("BTC")
     with Pool(processes=len(all_coins)) as pool:
         # pool.map(start_autotrader, all_coins)
-        # first worker process for handling config updates
-        # second for order manager
 
         pool.starmap(start_autotrader, [(coin, shared_config, shared_coin_config, update_event) for coin in all_coins])
        
