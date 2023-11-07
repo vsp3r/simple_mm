@@ -17,17 +17,21 @@ def coin_parse(coins: list, coin_file):
 
     with open(coin_path, 'r+') as f:    
         coin_data = json.load(f)
-        # coin_configs = {}
-        # for coin in coins:
-        #     if not (coin_data.get(coin, {}).get('CUSTOM', "False") == "True"):
-        #         coin_configs[coin] = {"CUSTOM": "False",
-        #                               "FADE": 0.1,
-        #                               "SPREAD": 0.1,
-        #                               "DEVIATION": 0.1}
-                
-        # # Writing the JSON with indentation
-        # f.seek(0)  # Move the file pointer to the beginning
-        # json.dump(coin_configs, f, indent=4) # 4 spaces for indentation
-        # f.truncate() # Remove any remaining old data in the file
-
+        ###
+        # write_coin_template(file=f, coins=coins, coin_data=coin_data)
+        ###
         return coin_data
+    
+def write_coin_template(file, coins, coin_data):
+    coin_configs = {}
+    for coin in coins:
+        if not (coin_data.get(coin, {}).get('CUSTOM', "False") == "True"):
+            coin_configs[coin] = {"CUSTOM": "False",
+                                    "FADE": 0.1,
+                                    "SPREAD": 0.1,
+                                    "DEVIATION": 0.1}
+            
+    # Writing the JSON with indentation
+    file.seek(0)  # Move the file pointer to the beginning
+    json.dump(coin_configs, file, indent=4) # 4 spaces for indentation
+    file.truncate() # Remove any remaining old data in the file

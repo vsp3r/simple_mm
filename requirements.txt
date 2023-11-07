@@ -4,4 +4,4 @@ hyperliquid-python-sdk
 numpy
 boto3
 lz4
-python-dontenv
+python-dotenv

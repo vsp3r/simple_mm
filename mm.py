@@ -27,10 +27,10 @@ last_conf_update = os.path.getmtime(CONFIG_FILE)
 last_coin_update = os.path.getmtime(COIN_FILE)
 
 
-def start_autotrader(coin, config, coin_config, update_event):
-    print(f'{coin}: {config}')
-    print(f'{coin}: {coin_config}')
-    at = AutoTrader(coin, config, coin_config, update_event, False)
+def start_autotrader(coin, shared_config, shared_coin_config, update_event):
+    print(f'{coin}: {shared_config}')
+    print(f'{coin}: {shared_coin_config}')
+    at = AutoTrader(coin, shared_config, shared_coin_config, update_event, False)
     print(f"intialized {coin}")
     at.start()
     # pass
