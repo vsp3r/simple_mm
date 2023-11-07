@@ -3,3 +3,7 @@ coinlist.txt
 .env
 mm_config.txt
 coin_config.txt
+install_instructions.txt
+/data_things/
+/logs/
+dot_test.py
