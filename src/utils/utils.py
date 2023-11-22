@@ -1,14 +1,14 @@
 import json
+import yaml
 import os
 
 
 def config_parse(config_file):
-    current_dir = os.path.dirname(__file__)
-    conf_data = {}
-    config_path = os.path.join(os.path.dirname(current_dir), config_file)
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    config_path = os.path.join(root_dir, 'config', config_file)
     
     with open(config_path) as f:
-        data = json.load(f)
+        data = yaml.safe_load(f)
         return data
 
 def coin_parse(coins: list, coin_file):
@@ -35,3 +35,4 @@ def write_coin_template(file, coins, coin_data):
     file.seek(0)  # Move the file pointer to the beginning
     json.dump(coin_configs, file, indent=4) # 4 spaces for indentation
     file.truncate() # Remove any remaining old data in the file
+
