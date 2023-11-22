@@ -1,119 +1,108 @@
-import argparse
-from multiprocessing import Pool, Manager, Event
-import threading
-import sys
-import logging
-import time
-import json
 import os
-import cProfile
-import pstats
-import traceback
+import math
 import asyncio
 from dotenv import load_dotenv
+import multiprocessing
+import time
+import signal
+from functools import partial
 
-from mm_infra import config_parse, coin_parse
-from mm_infra import AutoTrader
-# from mm_infra.autotrader import AutoTrader
-# import alpha.simple_mm.autotrader
-
-
-CONFIG_FILE = 'config.json'
-COIN_FILE = 'coin_config.json'
-AUTH_FILE = 'auth.json'
-LOG_FOLDER = 'logs'
-LOG_FILE = 'mm.log'
-last_conf_update = os.path.getmtime(CONFIG_FILE)
-last_coin_update = os.path.getmtime(COIN_FILE)
+from src.utils.utils import config_parse
+from src.exchanges.binance import BinanceConnector
+from src.exchanges.hyperliquid import HyperliquidConnector
+from src.execution.autotrader import AutoTrader
 
 
-def start_autotrader(coin, shared_config, shared_coin_config, update_event):
-    print(f'{coin}: {shared_config}')
-    print(f'{coin}: {shared_coin_config}')
-    at = AutoTrader(coin, shared_config, shared_coin_config, update_event, False)
-    print(f"intialized {coin}")
-    at.start()
-    # pass
-    # asyncio.run(at.run())
+MM_PARAMS_FILE = 'mm_params.yaml'
+CONFIG_FILE = 'config.yaml'
+COIN_CONFIG = 'coin_config.yaml'
+
+shutdown_event = multiprocessing.Event()
+
+def shutdown_sequence(shutdown_event, ws_processes, autotrader_processes):
+    shutdown_event.set()
+    for p in ws_processes + list(autotrader_processes.values()):
+        p.join()
+
+    # Collect and print performance metrics from AutoTraders
+    for key, at_process in autotrader_processes.items():
+        # This assumes you have a way to retrieve metrics from the process
+        metrics = at_process.get_performance_metrics()
+        print(f"Metrics for {key}: {metrics}")
 
 
-def config_monitor(update_event, shared_config, shared_coin_config, all_coins):
-    global last_coin_update, last_conf_update
-    while True:
-        if os.path.getmtime(COIN_FILE) != last_coin_update:
-            print('DETECTED COIN CONF CHANGE')
-            shared_coin_config.update(coin_parse(all_coins, COIN_FILE))
-            last_coin_update = os.path.getmtime(COIN_FILE)
-            update_event.set()
-        elif os.path.getmtime(CONFIG_FILE) != last_conf_update:
-            print('DETECTED CONF CHANGE')
-            shared_config.update(config_parse(CONFIG_FILE))
-            last_conf_update = os.path.getmtime(CONFIG_FILE)
-            update_event.set()
+def start_binance_websocket(coins, queues):
+    ws = BinanceConnector(coins, queues)
+    # print(queues)
+    asyncio.run(ws.run(shutdown_event))
 
+def start_dex_websocket(coins, exchange, queues):
+    print("AHHHHHHHHH", exchange)
+    if exchange == 'hyperliquid':
+        ws = HyperliquidConnector(coins, queues)
+        # ws.start()
+        asyncio.run(ws.run(shutdown_event))
 
-def run(config):
-    manager = Manager()
+def start_autotrader(exchange, coin, dex_queue, bin_queue):
+    at = AutoTrader(exchange, coin, dex_queue, bin_queue)
+    asyncio.run(at.run(shutdown_event))
 
-    # shared data
-    shared_config = manager.dict()
-    shared_coin_config = manager.dict()
-    update_event = manager.Event()
-
-    # Initial parsing
-    shared_config.update(config)
-    all_coins = config['Symbols']
-    shared_coin_config.update(coin_parse(all_coins, COIN_FILE))
-
-    print(config)
-
-    # dynamic update / config watcher
-    threading.Thread(target=config_monitor, args=(update_event, shared_config, shared_coin_config, all_coins)).start()
-   
-    # start_autotrader("BTC")
-    with Pool(processes=len(all_coins)) as pool:
-        # pool.map(start_autotrader, all_coins)
-
-        pool.starmap(start_autotrader, [(coin, shared_config, shared_coin_config, update_event) for coin in all_coins])
-       
 
 def main():
     config = config_parse(CONFIG_FILE)
-    for x in config['Symbols']:
-        print(x)
+    coins = config['Coins']
+    exchanges = config['Exchanges']
+    
 
-    # load_dotenv()
-    # print(os.getenv("ACCOUNT"))
-    # log_file_path = os.path.join(LOG_FOLDER, LOG_FILE)
-    # logging.basicConfig(filename=log_file_path, 
-    #                     format="%(asctime)s [%(levelname)-7s] [%(name)s] %(message)s",
-    #                     level=logging.INFO, 
-    #                     filemode='w'
-    #                     )
-    run(config)
+    dex_queues = {
+        exchange:{coin:multiprocessing.Queue() for coin in coins}
+                  for exchange in exchanges
+    }
+    binance_queues = {coin: multiprocessing.Queue() for coin in coins}
+  
+    # Dex Websockets
+    coins_per_feed = 5
+    num_ws = math.ceil(len(coins) / coins_per_feed)
 
+    ws_processes = []
+    autotrader_processes = {}
+    coin_pools = [coins[i:i+coins_per_feed] for i in range(0,len(coins),coins_per_feed)]
+    # print(coin_pools)
+    for group in coin_pools:
+        bin_queues_group = {coin:binance_queues[coin] for coin in group}
+        binance_ws_process = multiprocessing.Process(target=start_binance_websocket,
+                                                     args=(group, bin_queues_group))
+        binance_ws_process.start()
+        ws_processes.append(binance_ws_process)
+        for exchange in exchanges:
+            dex_queues_group = {coin:dex_queues[exchange][coin] for coin in group}
+            dex_ws_process = multiprocessing.Process(target=start_dex_websocket,
+                                                     args=(group, exchange, dex_queues_group))
+            dex_ws_process.start()
+            ws_processes.append(dex_ws_process)
 
+            # Init Autotrader Processes
+            for coin in group:
+                autotrader_process = multiprocessing.Process(target=start_autotrader,
+                                                             args=(exchange, coin, 
+                                                                   dex_queues[exchange][coin],
+                                                                   binance_queues[coin]))
+                process_key = (exchange, coin)
+                # print(f'in loop {process_key}')
+                autotrader_process.start()
+                autotrader_processes[process_key] = autotrader_process
+
+    for p in ws_processes:
+        p.join()
+    for p in autotrader_processes.values():
+        p.join()
+
+    
+    # signal.signal(signal.SIGINT, partial(shutdown_sequence, shutdown_event, ws_processes, autotrader_processes))
+    # signal.signal(signal.SIGTERM, partial(shutdown_sequence, shutdown_event, ws_processes, autotrader_processes))
 
 
 
 if __name__ == '__main__':
-    # pr = cProfile.Profile()
-    # pr.enable()
-    # # "main" code
-    
-    
-    
+    # multiprocessing.set_start_method('spawn')
     main()
-
-    
-    
-    
-    
-    # pr.disable()
-    # pr.dump_stats("profile_results.stats")
-
-    # # Load and print the stats
-    # stats = pstats.Stats("profile_results.stats")
-
-    # # Convert to milliseconds (ms)
-    # stats.strip_dirs().sort_stats('cumulative').print_stats(0.001)

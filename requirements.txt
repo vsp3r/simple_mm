@@ -5,3 +5,5 @@ numpy
 boto3
 lz4
 python-dotenv
+pyyaml
+orjson

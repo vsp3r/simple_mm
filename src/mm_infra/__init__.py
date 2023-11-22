@@ -9,6 +9,6 @@ __all__ = ["DataFeed", "Orderbook", "config_parse", "coin_parse", "ExchangeType"
 
 from .feed import DataFeed
 from .orderbook import Orderbook
-from .utils import config_parse, coin_parse
+from ..utils.utils import config_parse, coin_parse
 # from .types import ExchangeType
-from .autotrader import AutoTrader
+from ..execution.autotrader import AutoTrader
