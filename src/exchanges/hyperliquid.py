@@ -1,4 +1,5 @@
 import websockets
+from websockets.exceptions import ConnectionClosedError
 import asyncio
 import orjson
 import time
@@ -11,38 +12,40 @@ class HyperliquidConnector:
         self.queues = queues
 
         # self.ws = None
+        self.running = True
 
         self.ws_url = 'wss://api.hyperliquid.xyz/ws'
+        self.exchange = 'HYPERLIQUID'
         print(f'HYPERLIQUID coins: {self.symbols}')
         print(f'HYPERLIQUID queues: {self.queues}')
 
     # def start(self):
     #     asyncio.run(self.run())
 
-    async def run(self, shutdown_event):
+    async def run(self):
 
-        await self.connect(shutdown_event)
+        await self.connect()
 
-    async def connect(self, shutdown_event):
+    async def connect(self):
         # print('start hl connect')
         async with websockets.connect(self.ws_url) as ws:
-            # self.ws = ws
+            self.ws = ws
             # print('start hl websocket')
-            try:
-                await asyncio.gather(*(self.subscribe(ws, coin)
-                                    for coin in self.symbols))
-            
-                while not shutdown_event.is_set():
-                    message = await ws.recv()
-                    times = []
-                    times.append(time.time_ns())
-                    asyncio.create_task(self.process_data(message, times))
-            except KeyboardInterrupt:
-                await self.shutdown(ws)
-            except Exception as e:
-                print(f'{e}')
+            # try:
+            await asyncio.gather(*(self.subscribe(ws, coin)
+                                for coin in self.symbols))
+        
+            while self.running:
+                message = await ws.recv()
+                times = []
+                times.append(time.time_ns())
+                asyncio.create_task(self.process_data(message, times))
+            # except KeyboardInterrupt:
+            #     await self.shutdown(ws)
+            # except Exception as e:
+            #     print(f'{e}')
                 
-            await self.shutdown(ws)
+            # await self.shutdown(ws)
         
     async def subscribe(self, ws, coin):
         subscription_message = {
@@ -79,12 +82,15 @@ class HyperliquidConnector:
             #             self.size_counter.value += 1
 
         except Exception as e:
-            print(f"(HYPERLIQUID) {self.symbols} Error processing message: {e}\nMessage: {message}")
+            print(f"(HYPERLIQUID) {self.symbols} ERROR PROCESSING MESSAGE: {e}\nMessage: {message}")
 
-    async def shutdown(self, ws):
-        await asyncio.gather(*(self.unsubscribe(ws, coin)
-                                  for coin in self.symbols))
-        ws.close()
+    async def shutdown(self):
+        try:
+            await asyncio.gather(*(self.unsubscribe(self.ws, coin)
+                                    for coin in self.symbols))
+            await self.ws.close()
+        except ConnectionClosedError:
+            pass
         
     async def unsubscribe(self, ws, coin):
         subscription_message = {

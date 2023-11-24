@@ -1,4 +1,5 @@
 import websockets
+from websockets.exceptions import ConnectionClosedError
 import asyncio
 import orjson
 import time
@@ -8,42 +9,44 @@ class BinanceConnector:
     def __init__(self, symbols, queues):
         self.symbols = symbols
         self.queues = queues
+        self.running = True
         
         self.ws_url = 'wss://fstream.binance.com/ws'
+        self.exchange = 'BINANCE'
         print(f'BINANCE coins: {self.symbols}')
         print(f'BINANCE queues: {self.queues}')
     
     # def start(self):
     #     asyncio.run(self.run())
 
-    async def run(self, shutdown_event):
+    async def run(self):
         # print('starting BINANCE run')
         # await asyncio.gather(
         #     self.connect_feed()
         # )
-        await self.connect(shutdown_event)
+        await self.connect()
 
-    async def connect(self, shutdown_event):
+    async def connect(self):
         # print('start binance connect')
         async with websockets.connect(self.ws_url) as ws:
-            # self.ws = ws
+            self.ws = ws
             # print('start binance ws')
-            try:
-                await asyncio.gather(*(self.subscribe(ws, coin.lower() + 'usdt')
-                                    for coin in self.symbols))
-                
-                while not shutdown_event.is_set():
-                    message = await ws.recv()
-                    times = []
-                    times.append(time.time_ns())
-                    asyncio.create_task(self.process_data(message, times))
+            # try:
+            await asyncio.gather(*(self.subscribe(ws, coin.lower() + 'usdt')
+                                for coin in self.symbols))
             
-            except KeyboardInterrupt:
-                await self.shutdown(ws)
-            except Exception as e:
-                print(f'{e}')
+            while self.running:
+                message = await ws.recv()
+                times = []
+                times.append(time.time_ns())
+                asyncio.create_task(self.process_data(message, times))
+            
+            # except KeyboardInterrupt:
+            #     await self.shutdown(ws)
+            # except Exception as e:
+            #     print(f'{e}')
                 
-            await self.shutdown(ws)
+            # await self.shutdown(ws)
 
 
 
@@ -77,10 +80,13 @@ class BinanceConnector:
         except Exception as e:
             print(f"(BINANCE) {self.symbols} Error processing message: {e}\nMessage: {message}")
 
-    async def shutdown(self, ws):
-        await asyncio.gather(*(self.unsubscribe(ws, coin)
-                                  for coin in self.symbols))
-        ws.close()
+    async def shutdown(self):
+        try:
+            await asyncio.gather(*(self.unsubscribe(self.ws, coin)
+                                    for coin in self.symbols))
+            await self.ws.close()
+        except ConnectionClosedError:
+            pass
         
     async def unsubscribe(self, ws, coin):
         unsub = {

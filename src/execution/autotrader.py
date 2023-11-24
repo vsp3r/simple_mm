@@ -18,7 +18,7 @@ class AutoTrader:
         self.coin = coin
         self.dex_queue = dex_queue
         self.bin_queue = bin_queue
-        # self.running = True
+        self.running = True
 
 
         # self.data_feed = DataFeed(coin, (self.hl_handler, self.bin_handler))
@@ -31,18 +31,16 @@ class AutoTrader:
      
 
 
-    async def run(self, shutdown_event):
+    async def run(self):
         print(f'Running Autotrader {self.coin}')
-        while not shutdown_event.is_set():
-            try: 
-                await asyncio.gather(
-                    self.process_queue(self.bin_queue, 'binance'),
-                    self.process_queue(self.dex_queue, self.exchange)
-                )
-            except Exception as e:
-                print(f"Error in Autotrader {self.coin}: {e}")
-                break
-        print(self.get_performance_metrics)
+        while self.running:
+
+            await asyncio.gather(
+                self.process_queue(self.bin_queue, 'binance'),
+                self.process_queue(self.dex_queue, self.exchange)
+            )
+        
+        print(self.get_performance_metrics())
 
     async def process_queue(self, message_queue, exchange_type):
         try:
@@ -87,44 +85,10 @@ class AutoTrader:
         elapsed_times = [(t - times[0]) / 1_000_000_000 for t in times] 
         total_time = sum(elapsed_times)
         self.total_times.append(total_time)
-        print(f'times: {elapsed_times}, total: {total_time}')
+        print(f'AUTOTRADER (HL, {self.coin}), times: {elapsed_times}, total: {total_time}')
 
     def get_performance_metrics(self):
         return (self.total_times, sum(self.total_times)/len(self.total_times))
-
     
-        # print(f'AUTOTRADER ({self.exchange.upper()}, {self.coin}): {bid_sz, bid_px}, {ask_px, ask_sz}')
-#     def hl_handler(self, message, n):
-#         bid_price = float(message['data']['levels'][0][0]['px'])
-#         bid_sz = float(message['data']['levels'][0][0]['sz'])
-#         ask_price = float(message['data']['levels'][1][0]['px'])
-#         ask_sz = float(message['data']['levels'][1][0]['sz'])
-
-#         self.hl_book['bid'] = (bid_price, bid_sz)
-#         self.hl_book['ask'] = (ask_price, ask_sz)
-
-#         # print(f'{message}({n}): Max pos {self.glob_position}, coin pos {self.coin_pos}')
-#         print(f'HyperLiquid[{self.coin}] ({n}): {message}')
-#         # bids = message['data']['levels'][0][x]['px'] for x in message['data']['levels'][0]
-#         # print(message)
-
-#     def bin_handler(self, message, n):
-#         bid_price = float(message['b'][0][0])
-#         bid_sz = float(message['b'][0][1])
-#         ask_price = float(message['a'][0][0])
-#         ask_sz = float(message['a'][0][1])
-
-#         self.bin_book['bid'] = (bid_price, bid_sz)
-#         self.bin_book['ask'] = (ask_price, ask_sz)
-#         self.bin_book['book_pressure'] = ((bid_price * ask_sz) + (ask_price * bid_price)) / (ask_sz + bid_sz)
-
-#         # print(f'Binance[{self.coin}] ({n}): {message}')
-
-    # def start(self):
-    #     # print(f'started {self.coin}')
-
-    #     asyncio.run(self.run())
-
-    # def shutdown(self):
-    #     self.running = False
-    
+    async def shutdown(self):
+        print(self.get_performance_metrics())
