@@ -2,6 +2,7 @@ import websockets
 from websockets.exceptions import ConnectionClosedError
 import asyncio
 import orjson
+import json
 import time
 
 
@@ -13,8 +14,8 @@ class BinanceConnector:
         
         self.ws_url = 'wss://fstream.binance.com/ws'
         self.exchange = 'BINANCE'
-        print(f'BINANCE coins: {self.symbols}')
-        print(f'BINANCE queues: {self.queues}')
+        # print(f'BINANCE coins: {self.symbols}')
+        # print(f'BINANCE queues: {self.queues}')
     
     # def start(self):
     #     asyncio.run(self.run())
@@ -62,11 +63,13 @@ class BinanceConnector:
             "id":1
         }
         # print(f'sending sub {subscription_msg}')
+        # await ws.send(json.dumps(subscription_msg))
         await ws.send(orjson.dumps(subscription_msg).decode('utf-8'))
         # _ = await ws.recv() # drop first message
 
     async def process_data(self, message, times):
         data = orjson.loads(message)
+        # data = json.loads(message)
         try:
             # Check if the keys exist in the data
             if 'e' in data and 's' in data:

@@ -2,6 +2,7 @@ import websockets
 from websockets.exceptions import ConnectionClosedError
 import asyncio
 import orjson
+import json
 import time
 from queue import Full
 
@@ -16,21 +17,19 @@ class HyperliquidConnector:
 
         self.ws_url = 'wss://api.hyperliquid.xyz/ws'
         self.exchange = 'HYPERLIQUID'
-        print(f'HYPERLIQUID coins: {self.symbols}')
-        print(f'HYPERLIQUID queues: {self.queues}')
+        # print(f'HYPERLIQUID coins: {self.symbols}')
+        # print(f'HYPERLIQUID queues: {self.queues}')
 
     # def start(self):
     #     asyncio.run(self.run())
 
     async def run(self):
-
         await self.connect()
 
     async def connect(self):
         # print('start hl connect')
         async with websockets.connect(self.ws_url) as ws:
             self.ws = ws
-            # print('start hl websocket')
             # try:
             await asyncio.gather(*(self.subscribe(ws, coin)
                                 for coin in self.symbols))
@@ -54,6 +53,7 @@ class HyperliquidConnector:
         }
         # print(f'sending hl sub {coin}')
         await ws.send(orjson.dumps(subscription_message).decode('utf-8'))
+        # await ws.send(json.dumps(subscription_message))
         # subscription_message = {
         #     "method": "subscribe",
         #     "subscription": {"type": "trades", "coin":coin}
@@ -63,6 +63,7 @@ class HyperliquidConnector:
 
     async def process_data(self, message, times):
         data = orjson.loads(message)
+        # data = json.loads(message)
         # print(message)
         try:
             if 'channel' in data:
